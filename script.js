@@ -1,6 +1,6 @@
 /**
  * ULTRA-PREMIUM INTERACTIVE FRIENDSHIP PROPOSAL ENGINE
- * Handles Physics Engine, Interactive Audio Engine, Evasion Logic & FX
+ * Asset-Free Implementation (Web Audio API Synthesizer + Native Canvas Particle Physics)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,8 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION & STATE ---
     const state = {
         noAttempts: 0,
-        audioMuted: true,
-        heartClickCount: 0,
+        audioMuted: false,
         puppyClickCount: 0,
         userName: 'Bestie',
         mouse: { x: 0, y: 0 }
@@ -47,60 +46,98 @@ document.addEventListener('DOMContentLoaded', () => {
         countdown: document.getElementById('screen-countdown')
     };
 
-    // Audio Context Synthesizer (Fallback if local media fails to load)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
+    // --- WEB AUDIO API SYNTHESIZER (COMPLETE ASSET REPLACEMENT) ---
+    let audioCtx = null;
+    let bgInterval = null;
+
+    function initAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
     function playSyntheticSound(type) {
         if (state.audioMuted) return;
-        try {
+        initAudioContext();
+        if (!audioCtx) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'pop') {
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } else if (type === 'kiss') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.12);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+            osc.start(now);
+            osc.stop(now + 0.12);
+        } else if (type === 'bark') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.linearRampToValueAtTime(150, now + 0.15);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        }
+    }
+
+    // Programmatic Ambient Music Synthesizer
+    function startAmbientSynth() {
+        if (bgInterval || state.audioMuted) return;
+        const notes = [261.63, 329.63, 392.00, 523.25]; // C Major Chord Notes
+        let idx = 0;
+
+        bgInterval = setInterval(() => {
+            if (state.audioMuted) return;
+            initAudioContext();
+            if (!audioCtx) return;
+
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(notes[idx % notes.length], audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+
             osc.connect(gain);
             gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.2);
+            idx++;
+        }, 800);
+    }
 
-            if (type === 'pop') {
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'kiss') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.15);
-            }
-        } catch (e) {
-            console.warn('Audio synthesis issue: ', e);
+    function stopAmbientSynth() {
+        if (bgInterval) {
+            clearInterval(bgInterval);
+            bgInterval = null;
         }
     }
 
-    // Sound Player wrapper
-    function playSound(id) {
-        if (state.audioMuted) return;
-        const el = document.getElementById('audio-' + id);
-        if (el && el.currentTime !== undefined) {
-            el.currentTime = 0;
-            el.play().catch(() => playSyntheticSound(id));
-        } else {
-            playSyntheticSound(id);
-        }
-    }
-
-    // Audio Toggle Handler
+    // Audio Toggle
     audioToggle.addEventListener('click', () => {
         state.audioMuted = !state.audioMuted;
         audioIcon.textContent = state.audioMuted ? '🔇' : '🎵';
-        const bgAudio = document.getElementById('audio-bg');
         if (!state.audioMuted) {
-            bgAudio.volume = 0.4;
-            bgAudio.play().catch(() => {});
+            startAmbientSynth();
         } else {
-            bgAudio.pause();
+            stopAmbientSynth();
         }
     });
 
@@ -120,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         constructor(x, y, type) {
             this.x = x;
             this.y = y;
-            this.type = type || 'heart'; // heart, confetti, sparkle
+            this.type = type || 'heart';
             this.size = Math.random() * 12 + 8;
             this.vx = (Math.random() - 0.5) * 6;
             this.vy = (Math.random() - 0.5) * 6 - (type === 'confetti' ? 4 : 0);
@@ -135,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.y += this.vy;
             this.rotation += this.vRot;
             this.alpha -= 0.015;
-            if (this.type === 'confetti') this.vy += 0.15; // Gravity
+            if (this.type === 'confetti') this.vy += 0.15;
         }
 
         draw() {
@@ -166,11 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Continuous Canvas Loop
     function animateFX() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Random floating hearts in ambient environment
         if (Math.random() < 0.05) {
             particles.push(new Particle(Math.random() * canvas.width, canvas.height + 20, 'heart'));
         }
@@ -186,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     animateFX();
 
-    // Mouse Trail Hearts Engine
+    // Mouse Trail Hearts
     window.addEventListener('mousemove', (e) => {
         state.mouse.x = e.clientX;
         state.mouse.y = e.clientY;
@@ -195,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- NO BUTTON EVASION MECHANICS ---
+    // --- NO BUTTON EVASION ---
     const noPhrases = [
         "No", "Really?", "Think Again 😏", "Wrong Button 😂", 
         "Catch Me", "Oops", "Still No?", "Impossible", 
@@ -204,12 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function evadeNoButton() {
         state.noAttempts++;
-        playSound('pop');
+        playSyntheticSound('pop');
 
-        // Secret counter update
         noCounterHint.textContent = `You tried pressing NO ${state.noAttempts} times 😂`;
 
-        // Check if button explodes after 20 attempts
         if (state.noAttempts >= 20) {
             const rect = btnNo.getBoundingClientRect();
             spawnExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, 80, 'heart');
@@ -218,11 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Random phrases update
         const randomPhrase = noPhrases[Math.floor(Math.random() * noPhrases.length)];
         btnNo.textContent = randomPhrase;
 
-        // Evasion transforms
         const windowWidth = window.innerWidth - 120;
         const windowHeight = window.innerHeight - 60;
         
@@ -235,17 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btnNo.style.left = `${randomX}px`;
         btnNo.style.top = `${randomY}px`;
         btnNo.style.transform = `scale(${randomScale}) rotate(${randomRot}deg)`;
-
-        // Visual effects on button
         btnNo.style.opacity = Math.random() < 0.3 ? '0.2' : '1';
 
-        // Unlock Achievement
         if (state.noAttempts === 10) {
             unlockAchievement('PERSISTENT ONE 🙈', 'Tried clicking NO 10 times!');
         }
     }
 
-    // Distance Trigger for Evasion
     document.addEventListener('mousemove', (e) => {
         if (btnNo.style.display === 'none') return;
         
@@ -255,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
 
-        // If cursor gets closer than 100px, evade
         if (distance < 100) {
             evadeNoButton();
         }
@@ -263,24 +289,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnNo.addEventListener('click', evadeNoButton);
 
-    // --- YES BUTTON CLICK & TRANSITIONS ---
+    // --- YES BUTTON & TRANSITIONS ---
     btnYes.addEventListener('click', () => {
-        playSound('bark');
+        startAmbientSynth();
+        playSyntheticSound('bark');
         spawnExplosion(window.innerWidth / 2, window.innerHeight / 2, 150, 'confetti');
         document.body.classList.add('shake');
         setTimeout(() => document.body.classList.remove('shake'), 500);
 
         switchScreen(screens.landing, screens.puppy);
 
-        // Auto transition to Twist #1 after 4 seconds
         setTimeout(() => {
             switchScreen(screens.puppy, screens.promise);
         }, 4000);
     });
 
-    // --- TWIST BUTTONS & CERTIFICATE GENERATION ---
+    // --- PROMISE & CERTIFICATE ---
     const handlePromise = () => {
-        playSound('pop');
+        playSyntheticSound('pop');
         spawnExplosion(window.innerWidth / 2, window.innerHeight / 2, 60, 'heart');
         switchScreen(screens.promise, screens.certificate);
     };
@@ -288,26 +314,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-promise-1').addEventListener('click', handlePromise);
     document.getElementById('btn-promise-2').addEventListener('click', handlePromise);
 
-    // Download Certificate functionality
+    // Download Canvas Certificate
     document.getElementById('btn-download-cert').addEventListener('click', () => {
-        playSound('pop');
+        playSyntheticSound('pop');
         
-        // Dynamic Canvas Certificate rendering to image download
         const certCanvas = document.createElement('canvas');
         certCanvas.width = 800;
         certCanvas.height = 500;
         const c = certCanvas.getContext('2d');
 
-        // Draw Background Card
         c.fillStyle = '#fffdf9';
         c.fillRect(0, 0, 800, 500);
 
-        // Borders
         c.strokeStyle = '#d4af37';
         c.lineWidth = 8;
         c.strokeRect(20, 20, 760, 460);
 
-        // Text
         c.fillStyle = '#ff2a75';
         c.font = 'bold 32px sans-serif';
         c.textAlign = 'center';
@@ -330,13 +352,11 @@ document.addEventListener('DOMContentLoaded', () => {
         c.fillText(`Date: ${new Date().toLocaleDateString()}`, 60, 420);
         c.fillText(`ID: BFF-${Math.floor(1000 + Math.random() * 9000)}`, 60, 445);
 
-        // Create download trigger link
         const link = document.createElement('a');
         link.download = `Friendship_Certificate_${state.userName}.png`;
         link.href = certCanvas.toDataURL();
         link.click();
 
-        // Start final countdown sequence
         setTimeout(() => {
             switchScreen(screens.certificate, screens.countdown);
             runCountdown();
@@ -352,13 +372,12 @@ document.addEventListener('DOMContentLoaded', () => {
             count--;
             if (count > 0) {
                 timerElem.textContent = count;
-                playSound('pop');
+                playSyntheticSound('pop');
             } else {
                 clearInterval(interval);
                 timerElem.textContent = '🥳';
-                playSound('bark');
+                playSyntheticSound('bark');
                 
-                // Continuous Grand Explosion
                 const explosionInterval = setInterval(() => {
                     spawnExplosion(
                         Math.random() * window.innerWidth, 
@@ -373,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    // --- HELPER FUNCTIONS ---
+    // --- UTILITIES ---
     function switchScreen(fromScreen, toScreen) {
         fromScreen.classList.remove('active');
         fromScreen.classList.add('hidden');
@@ -390,19 +409,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('toast-desc').textContent = desc;
 
         toast.classList.remove('hidden');
-        playSound('pop');
+        playSyntheticSound('pop');
 
         setTimeout(() => {
             toast.classList.add('hidden');
         }, 4000);
     }
 
-    // --- INTERACTIVE MINI-GAME EXTENSION ---
+    // Interactive Puppy Clicker Mini-Game
     const puppyBox = document.getElementById('puppy-box');
     if (puppyBox) {
         puppyBox.addEventListener('click', (e) => {
             state.puppyClickCount++;
-            playSound('kiss');
+            playSyntheticSound('kiss');
             spawnExplosion(e.clientX, e.clientY, 20, 'heart');
 
             if (state.puppyClickCount === 10) {
@@ -411,3 +430,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+                                 
