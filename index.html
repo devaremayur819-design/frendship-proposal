@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Will You Be My Friend Forever? 💖</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <canvas id="fx-canvas"></canvas>
+
+    <div class="audio-control" id="audio-toggle" role="button" aria-label="Toggle Sound">
+        <span id="audio-icon">🎵</span>
+    </div>
+
+    <div id="achievement-toast" class="toast hidden">
+        <div class="toast-icon">🏆</div>
+        <div class="toast-content">
+            <h4 id="toast-title">Achievement Unlocked!</h4>
+            <p id="toast-desc">You found a secret!</p>
+        </div>
+    </div>
+
+    <main class="app-container">
+
+        <section id="screen-landing" class="screen active">
+            <div class="glass-card">
+                <span class="badge">LAST ONE, PROMISE 💖</span>
+                <h1 class="main-title">Will you be my friend forever, <span class="highlight-name" id="friend-name">Bestie</span>?</h1>
+                <p class="subtitle">There's only one honest answer here...<br>The other one is a little shy 😉</p>
+                
+                <div class="button-group">
+                    <button id="btn-yes" class="btn btn-yes">YES ❤️</button>
+                    <button id="btn-no" class="btn btn-no">NO 🙈</button>
+                </div>
+                <p id="no-counter-hint" class="hint-text"></p>
+            </div>
+        </section>
+
+        <section id="screen-puppy" class="screen hidden">
+            <div class="glass-card celebration-card">
+                <div class="emoji-header">🥹❤️</div>
+                <h1 class="celebration-title">I KNEW YOU WOULD SAY YES!!</h1>
+                
+                <div class="puppy-container" id="puppy-box">
+                    <div class="puppy-wrapper" id="interactive-puppy">
+                        <img src="assets/puppy.gif" alt="Cute Puppy" class="puppy-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'50%\' x=\'50%\' dominant-baseline=\'central\' text-anchor=\'middle\' font-size=\'80\'>🐶</text></svg>'">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-promise" class="screen hidden">
+            <div class="glass-card">
+                <span class="badge">WAIT... ONE MORE THING... 🤫</span>
+                <h1 class="main-title serif">Promise me...</h1>
+                <p class="subtitle large">We'll stay friends forever ❤️</p>
+                
+                <div class="button-group">
+                    <button id="btn-promise-1" class="btn btn-yes">I Promise 🤝</button>
+                    <button id="btn-promise-2" class="btn btn-yes">Forever ❤️</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-certificate" class="screen hidden">
+            <div class="glass-card cert-wrapper">
+                <div class="certificate" id="certificate-node">
+                    <div class="cert-border">
+                        <div class="cert-inner">
+                            <div class="cert-header">
+                                <span class="cert-badge">OFFICIAL CERTIFICATE</span>
+                                <h2>Best Friends Forever</h2>
+                            </div>
+                            <p class="cert-body">This official document certifies that</p>
+                            <h3 class="cert-name" id="cert-user-name">Bestie</h3>
+                            <p class="cert-body">is legally and eternally bound as an extraordinary best friend!</p>
+                            
+                            <div class="cert-footer">
+                                <div class="cert-meta">
+                                    <span>DATE: <strong id="cert-date">--/--/----</strong></span>
+                                    <span>ID: <strong id="cert-id">BFF-0000</strong></span>
+                                </div>
+                                <div class="gold-seal">
+                                    <span>GOLD SEAL</span>
+                                    ⭐
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cert-actions">
+                    <button id="btn-download-cert" class="btn btn-yes">Download Certificate 📜</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-countdown" class="screen hidden">
+            <div class="glass-card text-center">
+                <h1 class="countdown-title">Get Ready...</h1>
+                <div id="countdown-timer" class="countdown-display">3</div>
+            </div>
+        </section>
+
+    </main>
+
+    <audio id="audio-bg" loop src="assets/bg-music.mp3" preload="auto"></audio>
+    <audio id="audio-pop" src="assets/pop.mp3" preload="auto"></audio>
+    <audio id="audio-kiss" src="assets/kiss.mp3" preload="auto"></audio>
+    <audio id="audio-bark" src="assets/bark.mp3" preload="auto"></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
