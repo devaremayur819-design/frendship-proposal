@@ -1,5 +1,5 @@
 /* ==========================================
-   RESET & SYSTEM VARIABLE SETUP
+   SYSTEM RESET & DESIGN VARIABLES
    ========================================== */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -10,18 +10,14 @@
 }
 
 :root {
-    --primary-font: 'Poppins', sans-serif;
-    --serif-font: 'Playfair Display', serif;
+    --font-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: Georgia, 'Times New Roman', serif;
     
-    --bg-pink: #ffb6c1;
-    --bg-purple: #8a2be2;
-    --bg-lavender: #e6e6fa;
+    --glass-bg: rgba(255, 255, 255, 0.28);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
     
-    --glass-bg: rgba(255, 255, 255, 0.22);
-    --glass-border: rgba(255, 255, 255, 0.45);
-    --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-    
-    --text-main: #2d0c41;
+    --text-dark: #2d0c41;
     --accent-pink: #ff2a75;
     --accent-gold: #ffd700;
 }
@@ -30,14 +26,13 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    font-family: var(--primary-font);
+    font-family: var(--font-primary);
     background: linear-gradient(-45deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
-    cursor: default;
 }
 
-/* Base canvas overlay for graphics */
+/* Background Canvas */
 #fx-canvas {
     position: fixed;
     top: 0;
@@ -48,9 +43,7 @@ html, body {
     z-index: 1;
 }
 
-/* ==========================================
-   LAYOUT & GLASSMORPHISM CONTAINERS
-   ========================================== */
+/* App Container */
 .app-container {
     position: relative;
     width: 100%;
@@ -62,6 +55,7 @@ html, body {
     padding: 20px;
 }
 
+/* Screen Transitions */
 .screen {
     position: absolute;
     width: 100%;
@@ -69,7 +63,7 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .screen.hidden {
@@ -84,6 +78,7 @@ html, body {
     transform: scale(1) translateY(0);
 }
 
+/* Glassmorphism Card */
 .glass-card {
     background: var(--glass-bg);
     backdrop-filter: blur(25px);
@@ -97,46 +92,41 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 18px;
 }
 
-/* ==========================================
-   TYPOGRAPHY & UI ELEMENTS
-   ========================================== */
+/* UI Elements */
 .badge {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.7);
     padding: 6px 16px;
     border-radius: 20px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--accent-pink);
     letter-spacing: 1px;
-    text-transform: uppercase;
 }
 
 .main-title {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-dark);
     line-height: 1.3;
 }
 
 .main-title.serif {
-    font-family: var(--serif-font);
+    font-family: var(--font-serif);
     font-size: 2.5rem;
 }
 
 .highlight-name {
     color: var(--accent-pink);
     text-decoration: underline;
-    text-decoration-color: rgba(255, 42, 117, 0.3);
 }
 
 .subtitle {
     font-size: 1rem;
     color: #4a154b;
     line-height: 1.5;
-    font-weight: 400;
 }
 
 .subtitle.large {
@@ -147,13 +137,11 @@ html, body {
 .hint-text {
     font-size: 0.85rem;
     color: #6a1b9a;
-    font-weight: 500;
+    font-weight: 600;
     min-height: 20px;
 }
 
-/* ==========================================
-   BUTTONS & NO-BUTTON EVASION ARCHITECTURE
-   ========================================== */
+/* Buttons & Evasion */
 .button-group {
     display: flex;
     gap: 20px;
@@ -168,11 +156,11 @@ html, body {
 .btn {
     padding: 16px 36px;
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     border-radius: 50px;
     border: none;
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
@@ -187,14 +175,14 @@ html, body {
 }
 
 .btn-no {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85);
     color: #555;
     position: relative;
     z-index: 100;
     will-change: transform, left, top;
 }
 
-/* Audio button floating fixed */
+/* Floating Audio Toggle */
 .audio-control {
     position: fixed;
     top: 20px;
@@ -212,15 +200,10 @@ html, body {
     cursor: pointer;
     z-index: 999;
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
-}
-
-.audio-control:hover {
-    transform: scale(1.1);
 }
 
 /* ==========================================
-   PUPPY ANIMATION AREA
+   PURE HTML/CSS ANIMATED PUPPY
    ========================================== */
 .puppy-container {
     width: 180px;
@@ -228,48 +211,211 @@ html, body {
     margin: 10px 0;
     position: relative;
     cursor: pointer;
-}
-
-.puppy-wrapper {
-    width: 100%;
-    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: puppyEntrance 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-.puppy-img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 20px;
+.puppy-body-wrapper {
+    position: relative;
+    width: 120px;
+    height: 140px;
+    animation: puppyBounce 1.2s infinite ease-in-out alternate;
 }
 
-.emoji-header {
-    font-size: 3.5rem;
-    line-height: 1;
+.puppy-body-wrapper.jump {
+    animation: puppyJump 0.5s ease-out;
 }
 
-.celebration-title {
-    font-size: 1.8rem;
-    color: var(--accent-pink);
-    font-weight: 800;
+/* Tail & Wagging */
+.puppy-tail {
+    position: absolute;
+    bottom: 25px;
+    right: 0px;
+    width: 18px;
+    height: 50px;
+    background: #d48b47;
+    border-radius: 10px;
+    transform-origin: bottom center;
+    animation: wagTail 0.25s infinite alternate ease-in-out;
+}
+
+/* Body & Paws */
+.puppy-body {
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    width: 80px;
+    height: 70px;
+    background: #e29d52;
+    border-radius: 40px 40px 25px 25px;
+}
+
+.puppy-paws {
+    position: absolute;
+    bottom: -5px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+.paw {
+    width: 22px;
+    height: 16px;
+    background: #c87f3a;
+    border-radius: 10px 10px 5px 5px;
+}
+
+/* Head & Ears */
+.puppy-head {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 100px;
+    height: 90px;
+    background: #f0aa5d;
+    border-radius: 50px 50px 40px 40px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.puppy-ear {
+    position: absolute;
+    top: -5px;
+    width: 32px;
+    height: 55px;
+    background: #b8712a;
+    border-radius: 20px 20px 8px 8px;
+}
+
+.ear-left {
+    left: -8px;
+    transform: rotate(-25deg);
+    animation: moveEarLeft 2s infinite ease-in-out alternate;
+}
+
+.ear-right {
+    right: -8px;
+    transform: rotate(25deg);
+    animation: moveEarRight 2s infinite ease-in-out alternate;
+}
+
+/* Eyes & Pupils */
+.puppy-eye {
+    position: absolute;
+    top: 28px;
+    width: 22px;
+    height: 22px;
+    background: #222;
+    border-radius: 50%;
+    overflow: hidden;
+    animation: blinkEye 4s infinite;
+}
+
+.eye-left { left: 22px; }
+.eye-right { right: 22px; }
+
+.pupil {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.1s ease-out;
+}
+
+/* Snout, Nose, Mouth & Tongue */
+.puppy-snout {
+    position: absolute;
+    bottom: 12px;
+    left: 28px;
+    width: 44px;
+    height: 32px;
+    background: #fbe3c7;
+    border-radius: 22px;
+}
+
+.puppy-nose {
+    position: absolute;
+    top: 4px;
+    left: 14px;
+    width: 16px;
+    height: 12px;
+    background: #2d1810;
+    border-radius: 10px 10px 14px 14px;
+}
+
+.puppy-mouth {
+    position: absolute;
+    top: 16px;
+    left: 14px;
+    width: 16px;
+    height: 8px;
+    border-bottom: 3px solid #2d1810;
+    border-radius: 0 0 10px 10px;
+}
+
+.puppy-tongue {
+    position: absolute;
+    top: 20px;
+    left: 16px;
+    width: 12px;
+    height: 0px;
+    background: #ff5277;
+    border-radius: 0 0 8px 8px;
+    transition: height 0.2s ease;
+}
+
+.puppy-tongue.licking {
+    height: 16px;
+    animation: pantTongue 0.3s infinite alternate;
+}
+
+.puppy-subtext {
+    font-size: 0.85rem;
+    color: #6a1b9a;
+    font-weight: 600;
+}
+
+/* Screen Lick Overlay Effect */
+.lick-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(2px);
+    transition: opacity 0.5s ease;
+}
+
+.lick-overlay.hidden {
+    opacity: 0;
+}
+
+.tongue-print {
+    font-size: 15rem;
+    animation: lickScreen 0.8s ease-in-out;
 }
 
 /* ==========================================
-   CERTIFICATE DESIGN
+   CERTIFICATE & FINALE UI
    ========================================== */
-.cert-wrapper {
-    max-width: 520px;
-}
+.cert-wrapper { max-width: 520px; }
 
 .certificate {
     width: 100%;
     background: #fff;
     border-radius: 16px;
     padding: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
 .cert-border {
@@ -294,7 +440,7 @@ html, body {
 }
 
 .certificate h2 {
-    font-family: var(--serif-font);
+    font-family: var(--font-serif);
     color: #333;
     font-size: 1.8rem;
 }
@@ -305,7 +451,7 @@ html, body {
 }
 
 .cert-name {
-    font-family: var(--serif-font);
+    font-family: var(--font-serif);
     font-size: 2rem;
     color: var(--accent-pink);
     border-bottom: 2px solid var(--accent-pink);
@@ -333,7 +479,7 @@ html, body {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7);
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -341,12 +487,9 @@ html, body {
     font-size: 0.5rem;
     font-weight: 800;
     color: #4a3b00;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* ==========================================
-   TOAST & COUNTDOWN
-   ========================================== */
+/* Toast */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -360,9 +503,9 @@ html, body {
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
     z-index: 1000;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s ease;
 }
 
 .toast.hidden {
@@ -375,20 +518,11 @@ html, body {
 .toast-content h4 { font-size: 0.85rem; color: #333; }
 .toast-content p { font-size: 0.75rem; color: #666; }
 
-.countdown-title {
-    font-size: 2rem;
-    color: var(--text-main);
-}
-
-.countdown-display {
-    font-size: 6rem;
-    font-weight: 800;
-    color: var(--accent-pink);
-    animation: pulse 1s infinite;
-}
+.countdown-title { font-size: 2rem; color: var(--text-dark); }
+.countdown-display { font-size: 6rem; font-weight: 800; color: var(--accent-pink); }
 
 /* ==========================================
-   ANIMATIONS & KEYFRAMES
+   ANIMATION KEYFRAMES
    ========================================== */
 @keyframes gradientBG {
     0% { background-position: 0% 50%; }
@@ -396,20 +530,49 @@ html, body {
     100% { background-position: 0% 50%; }
 }
 
-@keyframes puppyEntrance {
-    0% { transform: scale(0) rotate(-180deg); }
-    100% { transform: scale(1) rotate(0deg); }
+@keyframes puppyBounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-12px); }
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+@keyframes puppyJump {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-35px) scale(1.15); }
+    100% { transform: translateY(0) scale(1); }
 }
 
-.shake {
-    animation: shakeEffect 0.5s cubic-bezier(.36,.07,.19,.97) both;
+@keyframes wagTail {
+    0% { transform: rotate(-35deg); }
+    100% { transform: rotate(35deg); }
 }
 
+@keyframes moveEarLeft {
+    0% { transform: rotate(-25deg); }
+    100% { transform: rotate(-40deg); }
+}
+
+@keyframes moveEarRight {
+    0% { transform: rotate(25deg); }
+    100% { transform: rotate(40deg); }
+}
+
+@keyframes blinkEye {
+    0%, 92%, 100% { transform: scaleY(1); }
+    96% { transform: scaleY(0.1); }
+}
+
+@keyframes pantTongue {
+    0% { height: 14px; }
+    100% { height: 18px; }
+}
+
+@keyframes lickScreen {
+    0% { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(0deg); opacity: 1; }
+    100% { transform: scale(1) rotate(10deg); opacity: 0; }
+}
+
+.shake { animation: shakeEffect 0.5s ease; }
 @keyframes shakeEffect {
     10%, 90% { transform: translate3d(-2px, 0, 0); }
     20%, 80% { transform: translate3d(4px, 0, 0); }
@@ -417,9 +580,9 @@ html, body {
     40%, 60% { transform: translate3d(8px, 0, 0); }
 }
 
-/* Screen responsive tweaks */
 @media (max-width: 480px) {
     .main-title { font-size: 1.6rem; }
     .glass-card { padding: 30px 20px; }
     .btn { padding: 14px 28px; font-size: 1rem; }
-}
+   }
+   
